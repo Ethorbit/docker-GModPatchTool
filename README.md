@@ -1,4 +1,4 @@
-A Docker image of [GModCEFCodecFix](https://github.com/solsticegamestudios/GModCEFCodecFix)
+A Docker image of [GModPatchTool](https://github.com/solsticegamestudios/GModPatchTool)
 
 Example: 
 
