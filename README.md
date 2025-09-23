@@ -5,7 +5,7 @@ Example:
 ```
 docker run -it \
     --rm --name "gmod-cef-codec" \
-    -v "/home/workstation/.var/app/com.valvesoftware.Steam/.steam/steam:/home/python/.steam/steam" \
+    -v "/home/workstation/.var/app/com.valvesoftware.Steam/.steam/steam:/home/gmod/.steam/steam" \
     -v "/mnt/games:/mnt/games" \
     ethorbit/gmod-cef-codec-fix:latest
 ```

@@ -1,30 +1,44 @@
-FROM python:3.13.0 AS base
+FROM rust:1.90 AS base
 
 ARG UID=1000
 ARG GID=1000
 
-VOLUME /home/python/.steam/steam
-WORKDIR /home/python
+VOLUME /home/gmod/.steam/steam
 
-RUN groupadd -g "${GID}" python &&\
-    useradd -g python -u "${UID}" python &&\
-    mkdir -p /home/python/.steam/steam &&\
-    chown -R python:python /home/python/ &&\
-    chmod -R 750 /home/python/
-
-USER python
+# Create user
+RUN groupadd -g "${GID}" gmod &&\
+    useradd -g gmod -u "${UID}" gmod &&\
+    mkdir -p /home/gmod/.steam/steam &&\
+    mkdir -p /home/gmod/.cache &&\
+    chown -R gmod:gmod /home/gmod/ &&\
+    chmod -R 750 /home/gmod/
 
 FROM base AS project
-RUN git clone https://github.com/solsticegamestudios/GModCEFCodecFix ./GModCEFCodecFix &&\
-    pip install -r ./GModCEFCodecFix/requirements.txt
 
-FROM project AS pyinstaller
-WORKDIR /home/python/GModCEFCodecFix
-ENV PATH="$PATH:/home/python/.local/bin"
-RUN pip install pyinstaller &&\
-    [ -f ./pyinstaller_linux.txt ] || exit 1 &&\
-    cat ./pyinstaller_linux.txt | sh &&\
-    cp ./dist/GModCEFCodecFix .
+# Install system dependencies + Git LFS
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    git \
+    curl \
+    git-lfs \
+    && rm -rf /var/lib/apt/lists/*
 
-ENTRYPOINT [ "/home/python/GModCEFCodecFix/GModCEFCodecFix" ]
-CMD [ "-steam_path", "/home/python/.steam/steam" ]
+USER gmod
+WORKDIR /home/gmod
+
+# Initialize Git LFS
+RUN git lfs install --system
+
+# Clone the repo and fetch LFS files
+RUN git clone https://github.com/solsticegamestudios/GModPatchTool.git ./GModPatchTool \
+    && cd ./GModPatchTool \
+    && git checkout 414ef2933958644ce3e9db56028f04ec9934aa25 \
+    && git lfs pull \
+    && cargo build --release
+
+# Optional: make binary accessible
+ENV PATH="./GModPatchTool/target/release:${PATH}"
+
+ENTRYPOINT [ "./GModPatchTool/target/release/gmodpatchtool" ]
+# CMD [ "-steam_path", "/home/gmod/.steam/steam" ]
