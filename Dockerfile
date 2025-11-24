@@ -33,7 +33,7 @@ RUN git lfs install --system
 # Clone the repo and fetch LFS files
 RUN git clone https://github.com/solsticegamestudios/GModPatchTool.git ./GModPatchTool \
     && cd ./GModPatchTool \
-    && git checkout 414ef2933958644ce3e9db56028f04ec9934aa25 \
+    && git checkout 355d6e9e6b4c838c5bbf36ee2be6495ef16ffb9b \
     && git lfs pull \
     && cargo build --release
 
